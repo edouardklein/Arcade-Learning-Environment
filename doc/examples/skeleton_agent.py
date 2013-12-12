@@ -18,6 +18,7 @@
 
 import random
 import sys
+import os
 import copy
 from rlglue.agent.Agent import Agent
 from rlglue.agent import AgentLoader as AgentLoader
@@ -72,4 +73,5 @@ class skeleton_agent(Agent):
 
 
 if __name__=="__main__":
+        os.environ["RLGLUE_PORT"] = "5042"
 	AgentLoader.loadAgent(skeleton_agent())
