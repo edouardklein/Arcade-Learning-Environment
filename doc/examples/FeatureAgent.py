@@ -40,6 +40,8 @@ class FeatureAgent():
     def loop(self):
         while 1:
             if select.select([self.network.agent_conn],[],[],0)[0]:
+                #TODO create and use recv_from_agent
+                #TODO intercept agent_start or agent_step
                 data = self.network.agent_conn.recv(8192)
                 if not data: break
                 self.network.sock.sendall(data)
@@ -50,6 +52,12 @@ class FeatureAgent():
                     new_task_spec = self.init_to_agent(task_spec)
                     #TODO: Construire dans data le "nouveau" message
                     print(new_task_spec)
+                    self.network.recvBuffer.seek(0)
+                    self.network.sendBuffer = self.network.recvBuffer
+                elif message_type == 5: #5 <-> agent_start
+                    observation = self.network.getObservation()
+                    new_observation = self.start_to_agent(observation)
+                    #TODO construire le nouveau message
                     self.network.recvBuffer.seek(0)
                     self.network.sendBuffer = self.network.recvBuffer
                 elif message_type == 6: #6 <-> agent_step
@@ -71,6 +79,9 @@ class FeatureAgent():
     def init_to_agent(self, task_spec):
         return task_spec
 
+    def start_to_agent(self, observation):
+        return observation
+        
     def step_to_agent(self, reward, observation):
         return reward, observation
     
