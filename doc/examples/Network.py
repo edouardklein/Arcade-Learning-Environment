@@ -118,15 +118,15 @@ class Network:
         self.sock.sendall(self.sendBuffer.getvalue())
 
     def recv(self):
+        return self.recv_from_source(self.sock)
+        
+    def recv_from_source(self, source):
         s = bytearray()
-        s += self.sock.recv(8192)
+        s += source.recv(8192)
         message_type = struct.unpack('!i',s[:4])[0]
         message_length = struct.unpack('!i',s[4:8])[0]
-        print("RLGlue -> type "+str(message_type)+' len '+str(message_length)+' len(s) '+str(len(s)))
         while len(s) < message_length + 8:
-            print('Asking for '+str(message_length+8 - len(s))+' more bytes')
             s += self.sock.recv(message_length+8 - len(s))
-            print('Now got a total of '+str(len(s)))
         self.clearRecvBuffer()
         self.recvBuffer.write(s)
         self.recvBuffer.seek(8)

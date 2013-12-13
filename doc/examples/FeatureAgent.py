@@ -23,6 +23,9 @@ class NetworkWithBind(Network):
     def send_to_agent(self):
         self.agent_conn.sendall(self.sendBuffer.getvalue())
 
+    def recv_from_agent(self):
+        return self.recv_from_source(self.agent_conn)
+
     def close(self):
         super().close()
         self.agent_conn.close()
@@ -40,11 +43,18 @@ class FeatureAgent():
     def loop(self):
         while 1:
             if select.select([self.network.agent_conn],[],[],0)[0]:
-                #TODO create and use recv_from_agent
-                #TODO intercept agent_start or agent_step
-                data = self.network.agent_conn.recv(8192)
-                if not data: break
-                self.network.sock.sendall(data)
+                message_type, message_length = self.network.recv_from_agent()
+                if message_type == 5 or message_type == 6: #start or step
+                    action = self.network.getAction()
+                    new_action = self.step_from_agent(action)
+                    #TODO construire le message
+                    self.network.recvBuffer.seek(0)
+                    self.network.sendBuffer = self.network.recvBuffer
+                else:
+                    self.network.recvBuffer.seek(0)
+                    self.network.sendBuffer = self.network.recvBuffer
+                self.network.send()
+                self.network.clearSendBuffer()
             if select.select([self.network.sock],[],[],0)[0]:
                 message_type,message_length = self.network.recv()
                 if message_type == 4: #4 <-> agent_init
@@ -85,7 +95,9 @@ class FeatureAgent():
     def step_to_agent(self, reward, observation):
         return reward, observation
     
-
+    def step_from_agent(self, action):
+        return action
+        
 if __name__=="__main__":
     agent = FeatureAgent()
     agent.loop()
