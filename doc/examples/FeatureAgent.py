@@ -44,12 +44,15 @@ class FeatureAgent():
         while 1:
             if select.select([self.network.agent_conn],[],[],0)[0]:
                 message_type, message_length = self.network.recv_from_agent()
+                #print("RLGlue <- : "+str(message_type)+", "+str(message_length))
                 if message_type == 5 or message_type == 6: #start or step
                     action = self.network.getAction()
                     new_action = self.step_from_agent(action)
-                    #TODO construire le message
-                    self.network.recvBuffer.seek(0)
-                    self.network.sendBuffer = self.network.recvBuffer
+                    message_length = self.network.sizeOfAction(new_action)
+                    self.network.clearSendBuffer()
+                    self.network.putInt(message_type)
+                    self.network.putInt(message_length)
+                    self.network.putAction(new_action)
                 else:
                     self.network.recvBuffer.seek(0)
                     self.network.sendBuffer = self.network.recvBuffer
@@ -57,27 +60,38 @@ class FeatureAgent():
                 self.network.clearSendBuffer()
             if select.select([self.network.sock],[],[],0)[0]:
                 message_type,message_length = self.network.recv()
+                #print("-> Agent : "+str(message_type)+", "+str(message_length))
                 if message_type == 4: #4 <-> agent_init
                     task_spec = self.network.getString()
-                    new_task_spec = self.init_to_agent(task_spec)
+                    new_task_spec = self.init_to_agent(str(task_spec))
                     #TODO: Construire dans data le "nouveau" message
                     print(new_task_spec)
-                    self.network.recvBuffer.seek(0)
-                    self.network.sendBuffer = self.network.recvBuffer
+                    message_length = len(new_task_spec) + 4
+                    self.network.clearSendBuffer()
+                    self.network.putInt(message_type)
+                    self.network.putInt(message_length)
+                    self.network.putString(new_task_spec)
                 elif message_type == 5: #5 <-> agent_start
                     observation = self.network.getObservation()
                     new_observation = self.start_to_agent(observation)
-                    #TODO construire le nouveau message
-                    self.network.recvBuffer.seek(0)
-                    self.network.sendBuffer = self.network.recvBuffer
+                    message_length = self.network.sizeOfObservation(
+                        new_observation)
+                    self.network.clearSendBuffer()
+                    self.network.putInt(message_type)
+                    self.network.putInt(message_length)
+                    self.network.putObservation(new_observation)
                 elif message_type == 6: #6 <-> agent_step
                     reward, observation = self.parse_step_message()
                     new_reward, new_observation = self.step_to_agent(
                         reward,
                         observation)
-                    #TODO: Construire le nouveau message dans data
-                    self.network.recvBuffer.seek(0)
-                    self.network.sendBuffer = self.network.recvBuffer
+                    message_length = self.network.sizeOfObservation(
+                        new_observation) + 8
+                    self.network.clearSendBuffer()
+                    self.network.putInt(message_type)
+                    self.network.putInt(message_length)
+                    self.network.putDouble(new_reward)
+                    self.network.putObservation(new_observation)
                 else:
                     self.network.recvBuffer.seek(0)
                     self.network.sendBuffer = self.network.recvBuffer
