@@ -64,7 +64,6 @@ class FeatureAgent():
                 if message_type == 4: #4 <-> agent_init
                     task_spec = self.network.getString()
                     new_task_spec = self.init_to_agent(str(task_spec))
-                    #TODO: Construire dans data le "nouveau" message
                     print(new_task_spec)
                     message_length = len(new_task_spec) + 4
                     self.network.clearSendBuffer()
