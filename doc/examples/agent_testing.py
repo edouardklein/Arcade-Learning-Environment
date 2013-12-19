@@ -30,7 +30,7 @@ def runEpisode(stepLimit):
     totalReward = RLGlue.RL_return()
 
     print "Episode " + str(whichEpisode) + "\t " + str(totalSteps) + " steps \t" + str(totalReward) + " total reward\t " + str(terminal) + " natural end"
-    with open('Asterix_testing.log', 'a') as f:
+    with open('agent.log', 'a') as f:
         f.write("Episode " + str(whichEpisode) + "\t " + str(totalSteps) + " steps \t" +
                 str(totalReward) + " total reward\t " + str(terminal) + " natural end\n")
 
@@ -42,7 +42,6 @@ print "\n\nExperiment starting up!"
 taskSpec = RLGlue.RL_init()
 print "RL_init called, the environment sent task spec: " + taskSpec
 print "\n\n---------Testing phase, 1 testing episodes----------"
-#Asterix is a deterministic game, if the policy is deterministic too, then one testing episode should tell us all we need to know.
 RLGlue.RL_agent_message("Evaluation")
 runEpisode(3600)
 

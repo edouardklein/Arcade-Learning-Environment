@@ -30,7 +30,7 @@ def runEpisode(stepLimit):
     totalReward = RLGlue.RL_return()
 
     print "Episode " + str(whichEpisode) + "\t " + str(totalSteps) + " steps \t" + str(totalReward) + " total reward\t " + str(terminal) + " natural end"
-    with open('Asterix.log', 'a') as f:
+    with open('Expert.log', 'a') as f:
         f.write("Episode " + str(whichEpisode) + "\t " + str(totalSteps) + " steps \t" +
                 str(totalReward) + " total reward\t " + str(terminal) + " natural end\n")
 
@@ -49,7 +49,6 @@ for i in range(0, 5000):
         RLGlue.RL_agent_message("save "+str(whichEpisode))
         
 print "\n\n---------Testing phase, 10 learning episodes----------"
-#Asterix is a deterministic game, if the policy is deterministic too, then one testing episode should tell us all we need to know. We do 10 of them to confirm this
 RLGlue.RL_agent_message("Evaluation")
 for i in range(0,10):
     runEpisode(3600)
